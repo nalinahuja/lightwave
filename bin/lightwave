@@ -35,6 +35,14 @@ function exit_processes() {
 
 # End Helper Functions---------------------------------------------------------------------------------------------------------------------------------------------
 
+function lightwave() {
+  # Start Bluetooth Service Manager
+  manage_service &
+
+  # Start Bluetooth Connection Manager
+  manage_connections
+}
+
 function manage_service() {
   # Log Program Event
   log_event "Starting Service Manager"
@@ -267,10 +275,7 @@ command pulseaudio --start &> /dev/null
 # Set Exit Global To True On SIGINT
 command trap exit_processes SIGINT &> /dev/null
 
-# Start Bluetooth Service Manager
-manage_service &
-
-# Start Bluetooth Connection Manager
-manage_connections
+# Call Service Wrapper Function
+lightwave
 
 # End Lightwave Manager--------------------------------------------------------------------------------------------------------------------------------------------
