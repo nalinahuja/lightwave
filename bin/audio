@@ -15,6 +15,9 @@ from colorzero import Color
 
 # End Imports------------------------------------------------------------------------------------------------------------------------------------------------------
 
+# Process Lock
+LOCK = "./.lock"
+
 # Audio Constants
 RATE = 33075
 CHUNK = 2048
@@ -61,7 +64,7 @@ def init_leds():
 
 def animate_leds(stream, rgb):
     # Create Process Lock
-    lck = open(".audio_lock", "w")
+    lck = open(LOCK, "w")
 
     # Initialize Volume
     vscore = 0
@@ -139,7 +142,7 @@ def animate_leds(stream, rgb):
             vscore = 0
 
         # Check Process Lock
-        lck = open(".audio_lock", "r")
+        lck = open(LOCK, "r")
 
 # End LED Animation Function---------------------------------------------------------------------------------------------------------------------------------------
 
