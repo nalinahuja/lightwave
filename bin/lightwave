@@ -207,9 +207,6 @@ function manage_connections() {
         # Check Activation Indicator
         if [[ ${led_on} == ${TRUE} ]]
         then
-          # Create Audio Process
-          command touch ${AUDIO_LOCK} &> /dev/null
-
           # Start Audio Process
           command ${AUDIO_AGENT} &> /dev/null &
         fi

@@ -63,6 +63,9 @@ def init_leds():
 # End LED Initialzer Function--------------------------------------------------------------------------------------------------------------------------------------
 
 def animate_leds(stream, rgb):
+    # Create Process Lock
+    lck = open(LOCK, "w")
+
     # Initialize Volume
     vscore = 0
 
