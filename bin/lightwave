@@ -11,7 +11,10 @@ declare TRUE=1 FALSE=0
 declare NSET=0 IDLE=1 TWAIT=10 TSLEEP=0.25
 
 # Program Paths
-declare AUDIO_ANALYZER=./audio CONNECTION_AGENT=./a2dp
+declare AUDIO_AGENT=./audio CONNECTION_AGENT=./a2dp
+
+# Asset Paths
+declare DEVICE_CONNECTED=./assets/device-connected.wav DEVICE_DISCONNECTED=./assets/device-disconnected.wav
 
 # End Defined Constants--------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -28,14 +31,35 @@ function log_event() {
   command echo -e "[event - $(command date +"%T")] - ${@}"
 }
 
+# End Log Functions------------------------------------------------------------------------------------------------------------------------------------------------
+
+function show_output() {
+  # Enable Terminal Output
+  command stty echo 2> /dev/null
+
+  # Set Cursor To Visible
+  command tput cnorm 2> /dev/null
+}
+
+function hide_output() {
+  # Disable Terminal Output
+  command stty -echo 2> /dev/null
+
+  # Set Cursor To Hidden
+  command tput civis 2> /dev/null
+}
+
 function exit_processes() {
   # Set Exit Flag To True
   exit_flag=${TRUE}
 }
 
-# End Helper Functions---------------------------------------------------------------------------------------------------------------------------------------------
+# End Environment Functions----------------------------------------------------------------------------------------------------------------------------------------
 
 function lightwave() {
+  # Disable Terminal Output
+  hide_output
+
   # Start Bluetooth Service Manager
   manage_service &
 
@@ -48,7 +72,7 @@ function manage_service() {
   log_event "Starting Service Manager"
 
   # Start Connection Agent
-  command ${CONNECTION_SERVICE} &> /dev/null &
+  command ${CONNECTION_AGENT} &> /dev/null &
 
   # Store Connection Agent PID
   local pid=$!
@@ -70,6 +94,9 @@ function manage_service() {
       then
         # Log Program Event
         log_event "Stopping Services"
+
+        # Enable Terminal Output
+        show_output
 
         # Break Loop
         break
@@ -113,13 +140,16 @@ function manage_connections() {
       command rm ./.audio_lock &> /dev/null
 
       # Play Disconnect Noise
-      command aplay ./assets/device-removed.wav &> /dev/null
+      command aplay ${DEVICE_DISCONNECTED} &> /dev/null
 
       # Unload Loopback Module
       command pactl unload-module ${audio_loopback} &> /dev/null
 
       # Reset Indicators
       led_on=${TRUE}; paired=${FALSE}; playback=${FALSE}; audio_loopback=${NSET}
+
+      # Enable Terminal Output
+      show_output
 
       # Break Loop
       break
@@ -146,7 +176,7 @@ function manage_connections() {
         log_event "Accepting Connection"
 
         # Play Connect Noise
-        command aplay ./assets/device-added.wav &> /dev/null
+        command aplay ${DEVICE_CONNECTED} &> /dev/null
 
         # Set Indicators
         paired=${TRUE}; playback=${TRUE}
@@ -159,7 +189,7 @@ function manage_connections() {
         local ctime=${stime}
 
         # Wait For A Bit
-        while [[ $((${ctime} - ${stime})) -lt ${TWAIT} && ${active_led} == ${TRUE} ]]
+        while [[ $((${ctime} - ${stime})) -lt ${TWAIT} && ${led_on} == ${TRUE} ]]
         do
           # Disable LEDs If Audio Played
           if [[ -z $(command pactl list sources short | command grep "bluez" | command grep "SUSPENDED") ]]
@@ -178,7 +208,7 @@ function manage_connections() {
         if [[ ${led_on} == ${TRUE} ]]
         then
           # Start Audio Process
-          command ${AUDIO_ANALYZER} &> /dev/null &
+          command ${AUDIO_AGENT} &> /dev/null &
         fi
 
       # Manage Bluetooth Connection
@@ -215,7 +245,7 @@ function manage_connections() {
           if [[ ${led_on} == ${TRUE} ]]
           then
             # Start Audio Process
-            command ${AUDIO_ANALYZER} &> /dev/null &
+            command ${AUDIO_AGENT} &> /dev/null &
           fi
         fi
       fi
@@ -230,7 +260,7 @@ function manage_connections() {
       command rm ./.audio_lock &> /dev/null
 
       # Play Disconnect Noise
-      command aplay ./assets/device-removed.wav &> /dev/null
+      command aplay ${DEVICE_DISCONNECTED} &> /dev/null
 
       # Reset Indicators
       led_on=${TRUE}; paired=${FALSE}; playback=${FALSE}; audio_loopback=${NSET}
