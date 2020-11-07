@@ -11,7 +11,7 @@ declare TRUE=1 FALSE=0
 declare NSET=0 IDLE=1 TWAIT=10 TSLEEP=0.25
 
 # Program Paths
-declare AUDIO_AGENT=./audio CONNECTION_AGENT=./a2dp
+declare AUDIO_AGENT=./audio CONNECTION_AGENT=./a2dp AUDIO_LOCK=./.lock
 
 # Asset Paths
 declare DEVICE_CONNECTED=./assets/device-connected.wav DEVICE_DISCONNECTED=./assets/device-disconnected.wav
@@ -137,7 +137,7 @@ function manage_connections() {
       log_event "Dropping Connections"
 
       # Kill Audio Process
-      command rm ./.audio_lock &> /dev/null
+      command rm ${AUDIO_LOCK} &> /dev/null
 
       # Play Disconnect Noise
       command aplay ${DEVICE_DISCONNECTED} &> /dev/null
@@ -207,6 +207,9 @@ function manage_connections() {
         # Check Activation Indicator
         if [[ ${led_on} == ${TRUE} ]]
         then
+          # Create Audio Process
+          command touch ${AUDIO_LOCK} &> /dev/null
+
           # Start Audio Process
           command ${AUDIO_AGENT} &> /dev/null &
         fi
@@ -221,7 +224,7 @@ function manage_connections() {
           log_event "Halting Audio Playback"
 
           # Kill Audio Process
-          command rm ./.audio_lock &> /dev/null
+          command rm ${AUDIO_LOCK} &> /dev/null
 
           # Unload Loopback Module
           command pactl unload-module ${audio_loopback} &> /dev/null
@@ -257,7 +260,7 @@ function manage_connections() {
       log_event "Dropping Connection"
 
       # Kill Audio Process
-      command rm ./.audio_lock &> /dev/null
+      command rm ${AUDIO_LOCK} &> /dev/null
 
       # Play Disconnect Noise
       command aplay ${DEVICE_DISCONNECTED} &> /dev/null
