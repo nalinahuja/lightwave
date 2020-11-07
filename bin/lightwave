@@ -258,16 +258,13 @@ command pulseaudio --kill &> /dev/null
 # Add User To Group
 sudo usermod -a -G lp pi
 
-# Set Bluetooth Service Attributes
+# Start Bluetooth Service
 sudo bluetoothctl &> /dev/null << EOF
 power on
 pairable on
 discoverable on
 exit
 EOF
-
-# Start Bluetooth Service
-sudo systemctl start bluetooth
 
 # Start Pulse Audio Service
 command pulseaudio --start &> /dev/null
