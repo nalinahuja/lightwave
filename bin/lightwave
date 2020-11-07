@@ -115,11 +115,11 @@ function manage_connections() {
       # Play Disconnect Noise
       command aplay ./assets/device-removed.wav &> /dev/null
 
-      # Reset Indicators
-      led_on=${TRUE}; paired=${FALSE}; playback=${FALSE}; audio_loopback=${NSET}
-
       # Unload Loopback Module
       command pactl unload-module ${audio_loopback} &> /dev/null
+
+      # Reset Indicators
+      led_on=${TRUE}; paired=${FALSE}; playback=${FALSE}; audio_loopback=${NSET}
 
       # Break Loop
       break
@@ -140,7 +140,7 @@ function manage_connections() {
       local capt_dev=$(command echo -e "${capt}" | command grep "aloop" | command awk '{print $1}')
 
       # Accept Bluetooth Connection
-      if [[ ${paired} == $FALSE && ! -z ${play_dev} && ! -z ${capt_dev} ]]
+      if [[ ${paired} == ${FALSE} && ! -z ${play_dev} && ! -z ${capt_dev} ]]
       then
         # Log Program Event
         log_event "Accepting Connection"
