@@ -63,9 +63,6 @@ def init_leds():
 # End LED Initialzer Function--------------------------------------------------------------------------------------------------------------------------------------
 
 def animate_leds(stream, rgb):
-    # Create Process Lock
-    lck = open(LOCK, "w")
-
     # Initialize Volume
     vscore = 0
 
@@ -156,6 +153,7 @@ if __name__ == "__main__":
         try:
             animate_leds(stream, rgb)
         except (KeyboardInterrupt, FileNotFoundError):
+            print("file not found")
             sys.exit()
         except Exception as e:
             print(e)
