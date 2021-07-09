@@ -78,8 +78,7 @@ function manage_service() {
   local pid=$!
 
   # Monitor Service Status
-  while [[ 1 ]]
-  do
+  while [[ 1 ]]; do
     # Get Bluetooth Service Status
     local status=$(sudo systemctl status bluetooth)
 
@@ -128,8 +127,7 @@ function manage_connections() {
   sudo modprobe snd-aloop
 
   # Monitor Bluetooth Interface
-  while [[ 1 ]]
-  do
+  while [[ 1 ]]; do
     # Check Exit Flag Before Doing Anything
     if [[ ${exit_flag} == ${TRUE} ]]
     then
@@ -189,8 +187,7 @@ function manage_connections() {
         local ctime=${stime}
 
         # Wait For A Bit
-        while [[ $((${ctime} - ${stime})) -lt ${TWAIT} && ${led_on} == ${TRUE} ]]
-        do
+        while [[ $((${ctime} - ${stime})) -lt ${TWAIT} && ${led_on} == ${TRUE} ]]; do
           # Disable LEDs If Audio Played
           if [[ -z $(command pactl list sources short | command grep "bluez" | command grep "SUSPENDED") ]]
           then
