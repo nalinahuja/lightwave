@@ -25,7 +25,7 @@ LOCK_FILE = "./.lock"
 
 # End Embedded Constants--------------------------------------------------------------------------------------------------------------------------------------------
 
-def norm(value, min, max):
+def normalize(value, min, max):
     # Normalize Input Value To Range [0, 1]
     return ((value - min) / (max - min + 1))
 
@@ -33,7 +33,7 @@ def norm(value, min, max):
 
 def init_leds():
     # Initialize GPIO Pins
-    leds = RGBLED(17, 22, 27)
+    # leds = RGBLED(17, 22, 27)
 
     # Initialize Audio Interface
     source = pa.PyAudio()
@@ -42,9 +42,9 @@ def init_leds():
     stream = source.open(format = pa.paInt16, input = True, channels = 2, rate = SAMPLE_RATE, frames_per_buffer = CHUNK_SIZE)
 
     # Return Packed Data
-    return (stream, leds)
+    return (stream, None)
 
-def animate_leds(stream, rgb):
+def animate_leds(stream, leds = None):
     # Create Process Lock File
     open(LOCK_FILE, "w")
 
@@ -52,21 +52,21 @@ def animate_leds(stream, rgb):
     audio_score = 0
 
     # Initialize Audio Frame Buffer
-    frame_buffer, frame_buffer_size = [], int(TIME_CONV * BUFFER_TIME)
+    frame_buffer, frame_buffer_size = [0], int(TIME_CONV * BUFFER_TIME)
 
     # Process Audio Stream
     while (True):
-        # Set LED Color By Audio Score
-        if (audio_score < 150):
-            rgb.color = Color("red")
-        elif (audio_score >= 150 and audio_score < 350):
-            rgb.color = Color("green")
-        elif (audio_score >= 350 and audio_score < 650):
-            rgb.color = Color("blue")
-        elif (audio_score >= 650 and audio_score < 850):
-            rgb.color = Color("purple")
-        elif (audio_score >= 850):
-            rgb.color = Color("white")
+        # # Set LED Color By Audio Score
+        # if (audio_score < 150):
+        #     leds.color = Color("red")
+        # elif (audio_score >= 150 and audio_score < 350):
+        #     leds.color = Color("green")
+        # elif (audio_score >= 350 and audio_score < 650):
+        #     leds.color = Color("blue")
+        # elif (audio_score >= 650 and audio_score < 850):
+        #     leds.color = Color("purple")
+        # elif (audio_score >= 850):
+        #     leds.color = Color("white")
 
         # Read Stream Chunk
         chunk = stream.read(CHUNK_SIZE)
@@ -74,15 +74,15 @@ def animate_leds(stream, rgb):
         # Calculate Audio Volume
         rms = ap.rms(chunk, 2)
 
-        # Calculate Normalize Audio Volume
-        rms = normalize(rms, min(frame_buffer), max(frame_buffer)) * MAX_VALUE
-
         # Maintain Frame Buffer
         if (len(frame_buffer) == frame_buffer_size):
-            buffer.pop(0)
+            frame_buffer.pop(0)
 
         # Update Frame Buffer
-        buffer.append(rms)
+        frame_buffer.append(rms)
+
+        # Calculate Normalize Audio Volume
+        rms = normalize(rms, min(frame_buffer), max(frame_buffer)) * MAX_VALUE
 
         print(rms)
 

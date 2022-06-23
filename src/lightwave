@@ -6,7 +6,7 @@
 readonly TRUE=1 FALSE=0 &> /dev/null
 
 # Numerical Constants
-readonly NSET=0 IDLE=1 TWAIT=10 TSLEEP=0.15 &> /dev/null
+readonly NSET=0 IDLE=1 TWAIT=10 TSLEEP=0.10 &> /dev/null
 
 # Program File Paths
 readonly AUDIO_AGENT=./audio.py CONNECTION_AGENT=./a2dp.py AUDIO_LOCK=./.lock &> /dev/null
@@ -43,17 +43,6 @@ function log_event() {
 }
 
 # End Interface Functions-------------------------------------------------------------------------------------------------------------------------------------------
-
-function lightwave() {
-  # Disable Terminal Output
-  hide_output
-
-  # Start Bluetooth Service Manager
-  manage_service &
-
-  # Start Bluetooth Connection Manager
-  manage_connections
-}
 
 function manage_service() {
   # Log Program Event
@@ -120,7 +109,7 @@ function manage_connections() {
     if [[ ${exit_main} == ${TRUE} ]]
     then
       # Log Program Event
-      log_event "Dropping Connections"
+      log_event "Terminating Connection"
 
       # Kill Audio Process Lock
       command rm ${AUDIO_LOCK} &> /dev/null
@@ -154,9 +143,6 @@ function manage_connections() {
       # Get Loopback Interface Devices
       local play_dev=$(command echo -e "${play}" | command grep "bluez" | command awk '{print $1}')
       local capt_dev=$(command echo -e "${capt}" | command grep "aloop" | command awk '{print $1}')
-
-      echo playback $play_dev
-      echo capture $capt_dev
 
       # Accept Bluetooth Connection
       if [[ ${bluetooth_paired} == ${FALSE} && -n ${play_dev} && -n ${capt_dev} ]]
@@ -273,13 +259,16 @@ log_event "Starting System Services"
 # Start Pulse Audio Service
 command pulseaudio --start &> /dev/null
 
-# Stop Bluetooth Service
-command sudo systemctl start bluetooth &> /dev/null
-
 # Set Exit Global To True On SIGINT
 command trap exit_program SIGINT &> /dev/null
 
-# Call Program Wrapper Function
-lightwave
+# Disable Terminal Output
+hide_output
+
+# Start Bluetooth Service Manager
+manage_service &
+
+# Start Bluetooth Connection Manager
+manage_connections
 
 # End Lightwave Manager--------------------------------------------------------------------------------------------------------------------------------------------
