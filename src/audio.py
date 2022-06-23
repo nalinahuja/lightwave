@@ -9,152 +9,105 @@ from time import time
 from gpiozero import RGBLED
 from colorzero import Color
 
-# End Imports------------------------------------------------------------------------------------------------------------------------------------------------------
-
-# Process Lock File
-LOCK = "./.lock"
+# End Imports-------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Audio Constants
-RATE = 33075
-CHUNK = 2048
-RANGE = 1000
+SAMPLE_RATE = 44100
+CHUNK_SIZE = 2048
+MAX_VALUE = 1000
 
 # Time Constants
-CONV = 16.67
-B_TIME = 3.75
+BUFFER_TIME = 5.00
+TIME_CONV = 16.67
 
-# Animation Constants
-DIFF = 42.5
-DECR = 0.80
+# Process Lock File
+LOCK_FILE = "./.lock"
 
-# End Defined Constants--------------------------------------------------------------------------------------------------------------------------------------------
-
-def mtime():
-    # Return Current Time In Milliseconds
-    return (int(time() * 1000))
+# End Embedded Constants--------------------------------------------------------------------------------------------------------------------------------------------
 
 def norm(value, min, max):
     # Normalize Input Value To Range [0, 1]
     return ((value - min) / (max - min + 1))
 
-def pdiff(v1, v2):
-    # Compute Percent Difference Between Input Values
-    return (abs(v1 - v2) / ((v1 + v2 + 1) / 2) * 100)
-
-# End Helper Functions---------------------------------------------------------------------------------------------------------------------------------------------
+# End Helper Functions----------------------------------------------------------------------------------------------------------------------------------------------
 
 def init_leds():
-    # Initialze GPIO Pins
-    rgb = RGBLED(17, 22, 27)
+    # Initialize GPIO Pins
+    leds = RGBLED(17, 22, 27)
 
-    # Initialze Audio Interface
+    # Initialize Audio Interface
     source = pa.PyAudio()
 
     # Create Audio Stream
-    stream = source.open(format = pa.paInt16, channels = 2, rate = RATE, input = True, frames_per_buffer = CHUNK)
+    stream = source.open(format = pa.paInt16, input = True, channels = 2, rate = SAMPLE_RATE, frames_per_buffer = CHUNK_SIZE)
 
     # Return Packed Data
-    return (stream, rgb)
-
-# End LED Initialzer Function--------------------------------------------------------------------------------------------------------------------------------------
+    return (stream, leds)
 
 def animate_leds(stream, rgb):
-    # Create Process Lock
-    lck = open(LOCK, "w")
+    # Create Process Lock File
+    open(LOCK_FILE, "w")
 
-    # Initialize Volume
-    vscore = 0
+    # Initialize Audio Score Metric
+    audio_score = 0
 
-    # Initialize Frame Buffer
-    vframes = []
-
-    # Initialize Frame Buffer Limit
-    vflen = int(B_TIME * CONV)
-
-    # Initalize Last Audio Peak
-    lpeak = mtime()
+    # Initialize Audio Frame Buffer
+    frame_buffer, frame_buffer_size = [], int(TIME_CONV * BUFFER_TIME)
 
     # Process Audio Stream
     while (True):
-        # Set LED Color
-        if (vscore < 150):
+        # Set LED Color By Audio Score
+        if (audio_score < 150):
             rgb.color = Color("red")
-        elif (vscore > 150 and vscore < 350):
+        elif (audio_score >= 150 and audio_score < 350):
             rgb.color = Color("green")
-        elif (vscore > 350 and vscore < 650):
+        elif (audio_score >= 350 and audio_score < 650):
             rgb.color = Color("blue")
-        elif (vscore > 650 and vscore < 850):
+        elif (audio_score >= 650 and audio_score < 850):
             rgb.color = Color("purple")
-        elif (vscore > 850):
+        elif (audio_score >= 850):
             rgb.color = Color("white")
 
         # Read Stream Chunk
-        data = stream.read(CHUNK)
+        chunk = stream.read(CHUNK_SIZE)
 
-        # Calculate Instantaneous Volume
-        rms = ap.rms(data, 2)
+        # Calculate Audio Volume
+        rms = ap.rms(chunk, 2)
+
+        # Calculate Normalize Audio Volume
+        rms = normalize(rms, min(frame_buffer), max(frame_buffer)) * MAX_VALUE
 
         # Maintain Frame Buffer
-        if (len(vframes) == vflen):
-            vframes.pop(0)
+        if (len(frame_buffer) == frame_buffer_size):
+            buffer.pop(0)
 
-        # Extend Frame Buffer
-        vframes.append(rms)
+        # Update Frame Buffer
+        buffer.append(rms)
 
-        # Trim Frame Buffer To Length
-        tvframes = vframes[(abs(len(vframes) - vflen)):]
+        
 
-        # Error Check Length
-        if (len(tvframes) == 0):
-            tvframes = vframes
-
-        # Normalize Instantaneous Volume
-        rms = norm(rms, min(tvframes), max(tvframes)) * RANGE
-
-        # Set Instantaneous Volume
-        if (pdiff(vscore, rms) > DIFF):
-            if (vscore <= rms):
-                # Get New Audio Peak
-                cpeak = mtime()
-
-                # Update Frame Buffer Multiplier
-                vflen = int((pow(2, (((cpeak - lpeak) / 1000))) + B_TIME) * CONV)
-
-                # Update Last Audio Peak
-                lpeak = cpeak
-
-                # Set Volume
-                vscore = rms
-            else:
-                # Decay Volume
-                vscore *= DECR
-
-        # Error Correct Volume
-        if (vscore < 1):
-            # Update Last Audio Peak
-            lpeak = mtime()
-
-            # Set To Minimum
-            vscore = 0
+        # Error Correct Audio Score
+        if (audio_score < 0):
+            # Reset Audio Score
+            audio_score = 0
 
         # Check Process Lock
-        lck = open(LOCK, "r")
+        open(LOCK_FILE, "r")
 
-# End LED Animation Function---------------------------------------------------------------------------------------------------------------------------------------
+# End LED Functions-------------------------------------------------------------------------------------------------------------------------------------------------
 
-if __name__ == "__main__":
+if (__name__ == "__main__"):
     # Start LED Control Loop
     while (True):
         # Initialize LEDs
-        stream, rgb = init_leds()
+        stream, leds = init_leds()
 
         # Start LED Animation
         try:
-            animate_leds(stream, rgb)
-        except (KeyboardInterrupt, FileNotFoundError):
-            print("file not found")
-            sys.exit()
+            animate_leds(stream, leds)
+        except FileNotFoundError:
+            pass
         except Exception as e:
             print(e)
 
-# End File---------------------------------------------------------------------------------------------------------------------------------------------------------
+# End Audio Processing File-----------------------------------------------------------------------------------------------------------------------------------------

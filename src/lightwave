@@ -204,7 +204,7 @@ function manage_connections() {
         if [[ ${audio_playback} == ${TRUE} && -z ${play_dev} ]]
         then
           # Log Program Event
-          log_event "Halting Audio audio_playback"
+          log_event "Halting Audio Playback"
 
           # Kill Audio Process
           command rm ${AUDIO_LOCK} &> /dev/null
@@ -219,7 +219,7 @@ function manage_connections() {
         elif [[ ${audio_playback} == ${FALSE}  && -n ${play_dev} ]]
         then
           # Log Program Event
-          log_event "Resuming Audio audio_playback"
+          log_event "Resuming Audio Playback"
 
           # Set Program Flags
           audio_playback=${TRUE}; audio_loopback=$(command pactl load-module module-loopback source=${play_dev} sink=${capt_dev})
