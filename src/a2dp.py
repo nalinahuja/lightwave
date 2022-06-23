@@ -1,9 +1,5 @@
-#!/usr/bin/env python3
-
 # Developed by Tucker Kern, mill1000
 # Modified by Nalin Ahuja, nalinahuja
-
-# End Header--------------------------------------------------------------------------------------------------------------------------------------------------------
 
 from __future__ import absolute_import, print_function, unicode_literals
 
