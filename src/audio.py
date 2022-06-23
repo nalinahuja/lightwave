@@ -84,7 +84,7 @@ def animate_leds(stream, rgb):
         # Update Frame Buffer
         buffer.append(rms)
 
-        
+        print(rms)
 
         # Error Correct Audio Score
         if (audio_score < 0):

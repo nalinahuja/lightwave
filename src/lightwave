@@ -71,13 +71,13 @@ function manage_service() {
     local status=$(command sudo systemctl status bluetooth)
 
     # Determine Service Status
-    if [[ -n $(command echo -e "${status}" | command grep "Active" | command grep "failed") || ${exit_flag} == ${TRUE} ]]
+    if [[ -n $(command echo -e "${status}" | command grep "Active" | command grep "failed") || ${exit_main} == ${TRUE} ]]
     then
       # Kill Connection Agent
       command kill ${pid} &> /dev/null
 
       # Check Exit Flag
-      if [[ ${exit_flag} == ${TRUE} ]]
+      if [[ ${exit_main} == ${TRUE} ]]
       then
         # Log Program Event
         log_event "Stopping Services"
@@ -117,7 +117,7 @@ function manage_connections() {
   # Monitor Bluetooth Interface
   while [[ 1 ]]; do
     # Check Exit Flag Before Doing Anything
-    if [[ ${exit_flag} == ${TRUE} ]]
+    if [[ ${exit_main} == ${TRUE} ]]
     then
       # Log Program Event
       log_event "Dropping Connections"
@@ -145,7 +145,7 @@ function manage_connections() {
     local connections=$(command hcitool con | command wc -l)
 
     # Determine Action
-    if [[ ${connections} -gt ${IDLE} ]]
+    if [[ ${connections} != ${IDLE} ]]
     then
       # Get Playback And Capture Devices
       local play=$(command pactl list sources short)
@@ -154,6 +154,9 @@ function manage_connections() {
       # Get Loopback Interface Devices
       local play_dev=$(command echo -e "${play}" | command grep "bluez" | command awk '{print $1}')
       local capt_dev=$(command echo -e "${capt}" | command grep "aloop" | command awk '{print $1}')
+
+      echo playback $play_dev
+      echo capture $capt_dev
 
       # Accept Bluetooth Connection
       if [[ ${bluetooth_paired} == ${FALSE} && -n ${play_dev} && -n ${capt_dev} ]]
@@ -267,25 +270,11 @@ function exit_program() {
 # Log Program Event
 log_event "Starting System Services"
 
-# Stop Bluetooth Service
-command sudo systemctl stop bluetooth &> /dev/null
-
-# Stop Pulse Audio Service
-command pulseaudio --kill &> /dev/null
-
-# Add User To Group
-command sudo usermod -a -G lp pi
-
-# Start Bluetooth Service
-command sudo bluetoothctl &> /dev/null << EOF
-power on
-pairable on
-discoverable on
-exit
-EOF
-
 # Start Pulse Audio Service
 command pulseaudio --start &> /dev/null
+
+# Stop Bluetooth Service
+command sudo systemctl start bluetooth &> /dev/null
 
 # Set Exit Global To True On SIGINT
 command trap exit_program SIGINT &> /dev/null
