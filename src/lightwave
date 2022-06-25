@@ -47,6 +47,11 @@ function log_event() {
 
 # End Interface Functions------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+function exit_managers() {
+  # Set Exit Flag To True
+  exit_main=${TRUE}
+}
+
 function manage_service() {
   # Log Program Event
   log_event "Starting Service Manager"
@@ -249,11 +254,6 @@ function manage_connections() {
   done
 }
 
-function exit_program() {
-  # Set Exit Flag To True
-  exit_main=${TRUE}
-}
-
 # End Subroutine Functions-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Log Program Event
@@ -262,19 +262,22 @@ log_event "Starting System Services"
 # Add Root User To Group Service
 command sudo usermod -a -G lp pi
 
+# Start Pulseaudio Service
+command pulseaudio --start &> /dev/null
+
 # Start Bluetooth Service
-command sudo systemctl start bluetooth
+command sudo systemctl start bluetooth &> /dev/null
 
 # Set Exit Global To True On SIGINT
-command trap exit_program SIGINT &> /dev/null
+command trap exit_managers SIGINT &> /dev/null
 
 # Disable Terminal Output
 hide_output
 
 # Start Bluetooth Service Manager
-manage_service 2> /dev/null &
+manage_service &
 
 # Start Bluetooth Connection Manager
-manage_connections 2> /dev/null
+manage_connections
 
 # End Lightwave Manager--------------------------------------------------------------------------------------------------------------------------------------------------------------
