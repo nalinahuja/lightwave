@@ -1,9 +1,4 @@
-#!/usr/bin/env python3
-
-# Developed by Tucker Kern, mill1000
-# Modified by Nalin Ahuja, nalinahuja
-
-# End Header-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Developed by Tucker Kern, mill1000 - Modified by Nalin Ahuja, nalinahuja
 
 from __future__ import absolute_import, print_function, unicode_literals
 
@@ -20,8 +15,7 @@ except ImportError:
 
 # End Imports------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-AGENT_INTERFACE = "org.bluez.Agent1"
-AGENT_PATH = "/test/agent"
+AGENT_PATH, AGENT_INTERFACE = "/test/agent", "org.bluez.Agent1"
 
 # End Global Variables---------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -37,7 +31,7 @@ class Agent(dbus.service.Object):
     @dbus.service.method(AGENT_INTERFACE, in_signature = "", out_signature = "")
     def Release(self):
         print("Release")
-        if self.exit_on_release:
+        if (self.exit_on_release):
             mainloop.quit()
 
     @dbus.service.method(AGENT_INTERFACE, in_signature = "os", out_signature = "")
@@ -77,7 +71,7 @@ class Agent(dbus.service.Object):
 
 # End Class Definitions--------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-if __name__ == '__main__':
+if (__name__ == "__main__"):
     dbus.mainloop.glib.DBusGMainLoop(set_as_default = True)
 
     bus = dbus.SystemBus()
@@ -91,4 +85,4 @@ if __name__ == '__main__':
     mainloop = GObject.MainLoop()
     mainloop.run()
 
-# End File---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# End Connection Agent---------------------------------------------------------------------------------------------------------------------------------------------------------------
