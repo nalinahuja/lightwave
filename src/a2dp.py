@@ -1,4 +1,6 @@
-# Developed by Tucker Kern, mill1000 -- Modified by Nalin Ahuja, nalinahuja
+# Developed by Tucker Kern, mill1000 - Modified by Nalin Ahuja, nalinahuja
+
+from __future__ import absolute_import, print_function, unicode_literals
 
 import os
 import sys
@@ -6,19 +8,16 @@ import dbus
 import dbus.service
 import dbus.mainloop.glib
 
-from __future__ import absolute_import, print_function, unicode_literals
-
 try:
     from gi.repository import GObject
 except ImportError:
     import gobject as GObject
 
-# End Imports--------------------------------------------------------------------------------------------------------------------------------------------------------
+# End Imports------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-AGENT_PATH = "/test/agent"
-AGENT_INTERFACE = "org.bluez.Agent1"
+AGENT_PATH, AGENT_INTERFACE = "/test/agent", "org.bluez.Agent1"
 
-# End Global Variables-----------------------------------------------------------------------------------------------------------------------------------------------
+# End Global Variables---------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 class Rejected(dbus.DBusException):
     _dbus_error_name = "org.bluez.Error.Rejected"
@@ -32,7 +31,7 @@ class Agent(dbus.service.Object):
     @dbus.service.method(AGENT_INTERFACE, in_signature = "", out_signature = "")
     def Release(self):
         print("Release")
-        if self.exit_on_release:
+        if (self.exit_on_release):
             mainloop.quit()
 
     @dbus.service.method(AGENT_INTERFACE, in_signature = "os", out_signature = "")
@@ -70,7 +69,7 @@ class Agent(dbus.service.Object):
     def Cancel(self):
         print("Cancel")
 
-# End Class Definitions----------------------------------------------------------------------------------------------------------------------------------------------
+# End Class Definitions--------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 if (__name__ == "__main__"):
     dbus.mainloop.glib.DBusGMainLoop(set_as_default = True)
@@ -86,4 +85,4 @@ if (__name__ == "__main__"):
     mainloop = GObject.MainLoop()
     mainloop.run()
 
-# End Connection Agent-----------------------------------------------------------------------------------------------------------------------------------------------
+# End Connection Agent---------------------------------------------------------------------------------------------------------------------------------------------------------------

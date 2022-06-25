@@ -1,0 +1,97 @@
+# Package Log-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+sudo apt-get update
+sudo apt full-upgrade
+
+sudo apt clean
+sudo apt autoremove
+
+sudo apt install vim
+
+sudo python3 -m pip install pip --upgrade
+sudo python3 -m pip install sounddevice --user
+
+sudp apt-get python-gobject python-gobject-2
+sudo apt-get install python3-pyaudio python3-gpiozero
+sudo apt-get install bluez bluez-tools bluez-firmware
+sudo apt-get install pulseaudio pulseaudio-module-bluetooth
+sudo apt-get install bluetooth libbluetooth-dev blueman pi-bluetooth
+
+# Change Log-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Set Rasbperry Pi Settings (Appearance, Wifi, SSH, Peripherials)
+
+Install (vim, qcd, bash, asoundrc, vimrc, updates)
+
+Create directory (dev/lightwave)
+
+Remove directory (pygames)
+
+Set pretty hostname in /etc/machine-info (PRETTY_HOSTNAME=AirPi)
+
+Set hostname in /etc/hostname (raspberrypi)
+
+Set name to AirPi /etc/bluetooth/main.conf
+Set pairable timeout to 0 in /etc/bluetooth/main.conf
+Set discoverable timeout to 0 in /etc/bluetooth/main.conf
+
+Removed UUID rejection from ./src/a2dp in def authorize service (from https://gist.github.com/mill1000/74c7473ee3b4a5b13f6325e9994ff84c)
+
+Modified /etc/systemd/system/bluetooth.target.wants/bluetooth.service with (
+  ExecStart=/usr/lib/bluetooth/bluetoothd --noplugin=avrcp, watchdog=10, restart=on-failure
+)
+
+Modified /etc/bluetooth/audio.conf with (
+  Enable=Source,Sink,Media,Socket
+)
+
+Modified /lib/systemd/system/bluealsa.service with the following (
+  [Unit]
+  Description=BluezALSA proxy
+  Requires=bluetooth.service
+  After=bluetooth.service
+
+  [Service]
+  Type=simple
+  User=root
+  ExecStart=/usr/bin/bluealsa -p a2dp-sink
+)
+
+# Development Log--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Current:
+
+  Add On Boot Functionality
+
+  Light Fade In/Out On Connection Change
+
+  Make the LED Update Faster
+
+  Implement A Different Audio Processing Algorithim
+
+# Useful Links-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+my question lol
+  https://raspberrypi.stackexchange.com/questions/112299/read-incoming-bluetooth-audio-on-pi-with-python
+
+bluetooth service
+  https://askubuntu.com/questions/380096/turn-on-off-bluetooth-from-shell-not-from-applet
+
+audio sources and sinks
+  https://askubuntu.com/questions/257992/how-can-i-use-pulseaudio-virtual-audio-streams-to-play-music-over-skype
+
+loopback device
+  https://unix.stackexchange.com/questions/469971/virtual-audio-device-wont-show-up-anymore-snd-aloop
+  https://sysplay.in/blog/linux/2019/06/playing-with-alsa-loopback-devices/
+  https://www.raspberrypi.org/forums/viewtopic.php?t=68779
+
+
+bluetooth setup
+  https://forums.raspberrypi.com/viewtopic.php?t=235519
+  https://scribles.net/streaming-bluetooth-audio-from-phone-to-raspberry-pi-using-alsa/
+
+headless bluetooth setup
+  https://gist.github.com/mill1000/74c7473ee3b4a5b13f6325e9994ff84c
+
+ial led guide
+  https://tutorials-raspberrypi.com/how-to-control-a-raspberry-pi-ws2801-rgb-led-strip/
