@@ -263,7 +263,7 @@ log_event "Starting System Services"
 command sudo usermod -a -G lp pi
 
 # Start Pulseaudio Service
-command pulseaudio --start &> /dev/null
+command sudo pulseaudio --start &> /dev/null
 
 # Start Bluetooth Service
 command sudo systemctl start bluetooth &> /dev/null
