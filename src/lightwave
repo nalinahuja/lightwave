@@ -262,14 +262,14 @@ log_event "Starting System Services"
 # Add Root User To Group Service
 command sudo usermod -a -G lp pi
 
+# Set Exit Global To True On SIGINT
+command trap exit_managers SIGINT
+
 # Start Pulseaudio Service
 command sudo pulseaudio --start &> /dev/null
 
 # Start Bluetooth Service
 command sudo systemctl start bluetooth &> /dev/null
-
-# Set Exit Global To True On SIGINT
-command trap exit_managers SIGINT &> /dev/null
 
 # Disable Terminal Output
 hide_output
