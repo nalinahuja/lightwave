@@ -5,11 +5,11 @@
 # Boolean Values
 readonly TRUE=1 FALSE=0
 
-# String Constants
-readonly ACTIVE="active"
-
 # Numerical Constants
-readonly NSET=0 IDLE=1 WAIT_PERIOD=10 REFRESH_INTERVAL=0.10
+readonly NSET=0 IDLE=1 ACTIVE=0
+
+# Time Constants
+readonly WAIT_PERIOD=10 REFRESH_INTERVAL=0.10
 
 # Program File Paths
 readonly AUDIO_AGENT=./audio.py CONNECTION_AGENT=./a2dp.py AUDIO_LOCK=./.lock
@@ -56,22 +56,19 @@ function manage_service() {
   # Log Program Event
   log_event "Starting Service Manager"
 
+  # Start Bluetooth Service
+  command sudo systemctl start bluetooth &> /dev/null
+
   # Start Connection Agent In Background
   command python3 ${CONNECTION_AGENT} &> /dev/null &
 
-  # Store Connection Agent PID
-  local pid=$!
-
-  # Monitor Service Status
+  # Monitor Bluetooth Service
   while [[ 1 ]]; do
     # Check Exit Flag Before Doing Anything
     if [[ ${exit_main} == ${TRUE} ]]
     then
         # Log Program Event
         log_event "Stopping Services"
-
-        # Kill Connection Agent
-        command kill ${pid} &> /dev/null
 
         # Enable Terminal Output
         show_output
@@ -80,23 +77,20 @@ function manage_service() {
         break
     fi
 
-    # Determine Bluetooth Service Status
-    if [[ $(command sudo systemctl is-active bluetooth) != ${ACTIVE} ]]
+    # Get Bluetooth Service Status
+    command sudo systemctl -q is-active bluetooth
+
+    # Check If Bluetooth Service Is Active
+    if [[ ${?} != ${ACTIVE} ]]
     then
       # Log Program Event
       log_event "Restarting Services"
 
-       # Kill Connection Agent
-      command kill ${pid} &> /dev/null
-
       # Start Bluetooth Service
-      command sudo systemctl start bluetooth
+      command sudo systemctl start bluetooth &> /dev/null
 
-      # Restart Connection Agent In Background
+      # Start Connection Agent In Background
       command python3 ${CONNECTION_AGENT} &> /dev/null &
-
-      # Update Connection Agent PID
-      pid=$!
     fi
 
     # Sleep For A Bit
@@ -111,7 +105,7 @@ function manage_connections() {
   # Load ALSA Loop Back Interface
   command sudo modprobe snd-aloop
 
-  # Monitor Bluetooth Interface
+  # Monitor Bluetooth Connections
   while [[ 1 ]]; do
     # Check Exit Flag Before Doing Anything
     if [[ ${exit_main} == ${TRUE} ]]
@@ -173,7 +167,7 @@ function manage_connections() {
           # Check For Audio Playback
           if [[ -z $(command pactl list sources short | command grep "bluez" | command grep "SUSPENDED") ]]
           then
-            # Disable LEDs If Audio Played
+            # Update Program Flag
             led_active=${FALSE}
 
             # Break Listening Loop
@@ -190,7 +184,7 @@ function manage_connections() {
         # Check Program Flag
         if [[ ${led_active} == ${TRUE} ]]
         then
-          # Start Audio Process In Background
+          # Start Audio Agent In Background
           command python3 ${AUDIO_AGENT} &> /dev/null &
         fi
 
@@ -224,7 +218,7 @@ function manage_connections() {
           # Check Program Flag
           if [[ ${led_active} == ${TRUE} ]]
           then
-            # Start Audio Process In Background
+            # Start Audio Agent In Background
             command python3 ${AUDIO_AGENT} &> /dev/null &
           fi
         fi
@@ -256,20 +250,11 @@ function manage_connections() {
 
 # End Subroutine Functions-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Log Program Event
-log_event "Starting System Services"
-
 # Add Root User To Group Service
 command sudo usermod -a -G lp pi
 
 # Set Exit Global To True On SIGINT
 command trap exit_managers SIGINT
-
-# Start Pulseaudio Service
-command sudo pulseaudio --start &> /dev/null
-
-# Start Bluetooth Service
-command sudo systemctl start bluetooth &> /dev/null
 
 # Disable Terminal Output
 hide_output
