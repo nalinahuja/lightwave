@@ -56,8 +56,8 @@ function manage_service() {
   # Log Program Event
   log_event "Starting Service Manager"
 
-  # Start Bluetooth Service
-  command sudo systemctl start bluetooth &> /dev/null
+  # Restart Bluetooth Service
+  command sudo systemctl restart bluetooth &> /dev/null
 
   # Start Connection Agent In Background
   command python3 ${CONNECTION_AGENT} &> /dev/null &
@@ -78,7 +78,7 @@ function manage_service() {
     fi
 
     # Get Bluetooth Service Status
-    command sudo systemctl -q is-active bluetooth
+    command sudo systemctl --quiet is-active bluetooth
 
     # Check If Bluetooth Service Is Active
     if [[ ${?} != ${ACTIVE} ]]
@@ -86,8 +86,8 @@ function manage_service() {
       # Log Program Event
       log_event "Restarting Services"
 
-      # Start Bluetooth Service
-      command sudo systemctl start bluetooth &> /dev/null
+      # Restart Bluetooth Service
+      command sudo systemctl restart bluetooth &> /dev/null
 
       # Start Connection Agent In Background
       command python3 ${CONNECTION_AGENT} &> /dev/null &
@@ -252,6 +252,7 @@ function manage_connections() {
 
 # Add Root User To Group Service
 command sudo usermod -a -G lp pi
+command sudo usermod -a -G bluetooth pi
 
 # Set Exit Global To True On SIGINT
 command trap exit_managers SIGINT
