@@ -107,9 +107,6 @@ function manage_connections() {
       # Kill Audio Process Lock
       command rm ${AUDIO_LOCK} &> /dev/null
 
-      # Play Disconnect Noise
-      command aplay ${DEVICE_DISCONNECTED} &> /dev/null
-
       # Unload Loopback Module
       command pactl unload-module ${audio_loopback} &> /dev/null
 
