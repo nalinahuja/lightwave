@@ -19,33 +19,34 @@ sudo apt-get install bluetooth libbluetooth-dev blueman pi-bluetooth
 
 # Change Log-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Set Rasbperry Pi Settings (Appearance, Wifi, SSH, Peripherials)
+Configure Settings (Appearance, Wifi, SSH, Peripherials)
 
-Install (vim, qcd, bash, asoundrc, vimrc, updates)
+Install Packages (vim, qcd, bash, asoundrc, vimrc, updates)
 
-Create directory (dev/lightwave)
+Create directory (~/dev/lightwave)
 
-Remove directory (pygames)
+Remove directory (~/pygames)
 
-Set pretty hostname in /etc/machine-info (PRETTY_HOSTNAME=AirPi)
+Set pretty hostname in /etc/machine-info as (PRETTY_HOSTNAME=AirPi)
 
-Set hostname in /etc/hostname (raspberrypi)
+Set hostname in /etc/hostname as (raspberrypi)
 
-Set name to AirPi /etc/bluetooth/main.conf
-Set pairable timeout to 0 in /etc/bluetooth/main.conf
-Set discoverable timeout to 0 in /etc/bluetooth/main.conf
+Set name in /etc/bluetooth/main.conf as (AirPi)
+Set pairable timeout in /etc/bluetooth/main.conf to (0)
+Set discoverable timeout in /etc/bluetooth/main.conf to (0)
 
-Removed UUID rejection from ./src/a2dp in def authorize service (from https://gist.github.com/mill1000/74c7473ee3b4a5b13f6325e9994ff84c)
+Remove UUID rejection from ./src/a2dp.py in fucntion AuthorizeService (from https://gist.github.com/mill1000/74c7473ee3b4a5b13f6325e9994ff84c)
 
-Modified /etc/systemd/system/bluetooth.target.wants/bluetooth.service with (
+Modifiy /etc/systemd/system/bluetooth.target.wants/bluetooth.service with (
   ExecStart=/usr/lib/bluetooth/bluetoothd --noplugin=avrcp, watchdog=10, restart=on-failure
 )
 
-Modified /etc/bluetooth/audio.conf with (
+Modify /etc/bluetooth/audio.conf with (
+  [General]
   Enable=Source,Sink,Media,Socket
 )
 
-Modified /lib/systemd/system/bluealsa.service with the following (
+Modify /lib/systemd/system/bluealsa.service with (
   [Unit]
   Description=BluezALSA proxy
   Requires=bluetooth.service
@@ -58,18 +59,6 @@ Modified /lib/systemd/system/bluealsa.service with the following (
 )
 
 # Development Log--------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-Current:
-
-  Add On Boot Functionality
-
-  Light Fade In/Out On Connection Change
-
-  Make the LED Update Faster
-
-  Implement A Different Audio Processing Algorithim
-
-# Useful Links-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 my question lol
   https://raspberrypi.stackexchange.com/questions/112299/read-incoming-bluetooth-audio-on-pi-with-python

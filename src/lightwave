@@ -9,7 +9,7 @@ readonly TRUE=1 FALSE=0
 readonly NSET=0 IDLE=1 ACTIVE=0
 
 # Time Constants
-readonly WAIT_PERIOD=10 REFRESH_INTERVAL=0.10
+readonly WAIT_PERIOD=10.0 DELAY_PERIOD=1.0 REFRESH_INTERVAL=0.1
 
 # Program File Paths
 readonly AUDIO_AGENT=./audio.py SERVICE_AGENT=./a2dp.py AUDIO_LOCK=./.lock
@@ -58,6 +58,8 @@ function manage_service() {
 
   # Start Service Agent In Background
   command python3 ${SERVICE_AGENT} &> /dev/null &
+
+  # allow only one process of the service agent to run
 
   # Monitor Bluetooth Service
   while [[ 1 ]]; do
@@ -246,6 +248,12 @@ command sudo usermod -a -G lp pi
 
 # Set Exit Global To True On SIGINT
 command trap exit_program SIGINT
+
+# Restart Bluetooth System Service
+command sudo systemctl restart bluetooth
+
+# Allow Bluetooth System Service To Restart
+command sleep ${DELAY_PERIOD}
 
 # Disable Terminal Output
 hide_output
