@@ -9,10 +9,10 @@ readonly TRUE=1 FALSE=0
 readonly NSET=0 IDLE=1 ACTIVE=0
 
 # Time Constants
-readonly WAIT_PERIOD=10 REFRESH_INTERVAL=0.10
+readonly DELAY_PERIOD=1 WAIT_PERIOD=10 REFRESH_INTERVAL=0.10
 
 # Program File Paths
-readonly AUDIO_AGENT=./audio.py CONNECTION_AGENT=./a2dp.py AUDIO_LOCK=./.lock
+readonly AUDIO_AGENT=./audio.py SERVICE_AGENT=./a2dp.py AUDIO_LOCK=./.lock
 
 # Audio Asset Paths
 readonly DEVICE_CONNECTED=./assets/device-connected.wav DEVICE_DISCONNECTED=./assets/device-disconnected.wav
@@ -56,11 +56,8 @@ function manage_service() {
   # Log Program Event
   log_event "Starting Service Manager"
 
-  # Restart Bluetooth Service
-  command sudo systemctl restart bluetooth &> /dev/null
-
-  # Start Connection Agent In Background
-  command python3 ${CONNECTION_AGENT} &> /dev/null &
+  # Start Service Agent In Background
+  command python3 ${SERVICE_AGENT} &> /dev/null &
 
   # Monitor Bluetooth Service
   while [[ 1 ]]; do
@@ -86,11 +83,8 @@ function manage_service() {
       # Log Program Event
       log_event "Restarting Services"
 
-      # Restart Bluetooth Service
-      command sudo systemctl restart bluetooth &> /dev/null
-
-      # Start Connection Agent In Background
-      command python3 ${CONNECTION_AGENT} &> /dev/null &
+      # Start Service Agent In Background
+      command python3 ${SERVICE_AGENT} &> /dev/null &
     fi
 
     # Sleep For A Bit
@@ -252,7 +246,6 @@ function manage_connections() {
 
 # Add Root User To Group Service
 command sudo usermod -a -G lp pi
-command sudo usermod -a -G bluetooth pi
 
 # Set Exit Global To True On SIGINT
 command trap exit_managers SIGINT
@@ -262,6 +255,9 @@ hide_output
 
 # Start Bluetooth Service Manager
 manage_service &
+
+# Delay Bluetooth Connection Manager
+command sleep ${DELAY_PERIOD}
 
 # Start Bluetooth Connection Manager
 manage_connections
