@@ -22,7 +22,7 @@ LOCK_FILE = "./.lock"
 
 # End Embedded Constants-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def normalize(value, min_value, max_value):
+def unorm(value, min_value, max_value):
     # Normalize Input Value Inside Unit Interval
     return ((value - min_value) / (max_value - min_value + 1))
 
@@ -30,7 +30,7 @@ def normalize(value, min_value, max_value):
 
 def animate_led():
     # Initialize GPIO Pins For LED Control
-    # led = RGBLED(17, 22, 27)
+    # led = RGBLED(17, 22, 27, active_high = False)
 
     stream = pa.PyAudio()
     # Open Audio Stream Using PyAudio Interface
@@ -81,7 +81,7 @@ def animate_led():
             continue
 
         # Normalize Audio Volume To Range
-        rms = normalize(rms, min(frame_buffer), max(frame_buffer)) * MAX_VALUE
+        rms = unorm(rms, min(frame_buffer), max(frame_buffer)) * MAX_VALUE
 
         print("\r" + "\033[2K" + str("-" * int(rms / 100)) + "+", end = "")
 

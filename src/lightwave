@@ -259,7 +259,7 @@ manage_service &
 # Start Bluetooth Connection Manager
 manage_connections
 
- # Kill Any Zombie Child Processes
+# Kill Any Zombie Child Processes
 command pkill -P $$ &> /dev/null
 
 # End Lightwave Manager--------------------------------------------------------------------------------------------------------------------------------------------------------------
