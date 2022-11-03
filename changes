@@ -1,4 +1,4 @@
-# Package Log-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Package Log-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 sudo apt-get update
 sudo apt full-upgrade
@@ -17,7 +17,7 @@ sudo apt-get install bluez bluez-tools bluez-firmware
 sudo apt-get install pulseaudio pulseaudio-module-bluetooth
 sudo apt-get install bluetooth libbluetooth-dev blueman pi-bluetooth
 
-# Change Log-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Change Log--------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Configure Settings (Appearance, Wifi, SSH, Peripherials)
 
@@ -58,9 +58,9 @@ Modify /lib/systemd/system/bluealsa.service with (
   ExecStart=/usr/bin/bluealsa -p a2dp-sink
 )
 
-# Development Log--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Development Log---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-my question lol
+my question
   https://raspberrypi.stackexchange.com/questions/112299/read-incoming-bluetooth-audio-on-pi-with-python
 
 bluetooth service
@@ -73,7 +73,6 @@ loopback device
   https://unix.stackexchange.com/questions/469971/virtual-audio-device-wont-show-up-anymore-snd-aloop
   https://sysplay.in/blog/linux/2019/06/playing-with-alsa-loopback-devices/
   https://www.raspberrypi.org/forums/viewtopic.php?t=68779
-
 
 bluetooth setup
   https://forums.raspberrypi.com/viewtopic.php?t=235519
