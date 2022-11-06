@@ -12,7 +12,7 @@ readonly NULL=0 IDLE=1 ACTIVE=0
 readonly WAIT_PERIOD=5 DELAY_PERIOD=1 REFRESH_INTERVAL=0.10
 
 # Program File Paths
-readonly AUDIO_LOCK=./.lock AUDIO_AGENT=./audio.py SERVICE_AGENT=./a2dp.py 
+readonly AUDIO_LOCK=./.lock AUDIO_AGENT=./audio.py SERVICE_AGENT=./a2dp.py
 
 # Audio Asset Paths
 readonly DEVICE_CONNECTED=./assets/device-connected.wav DEVICE_DISCONNECTED=./assets/device-disconnected.wav
