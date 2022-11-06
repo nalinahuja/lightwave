@@ -176,7 +176,8 @@ function manage_connections() {
         if [[ ${led_active} -eq ${TRUE} ]]
         then
           # Start Audio Agent In Background
-          command python3 ${AUDIO_AGENT} &> /dev/null &
+          # command python3 ${AUDIO_AGENT} &> /dev/null &
+          : # no-op
         fi
 
       # Manage Bluetooth Connection
@@ -213,7 +214,8 @@ function manage_connections() {
           if [[ ${led_active} -eq ${TRUE} ]]
           then
             # Start Audio Agent In Background
-            command python3 ${AUDIO_AGENT} &> /dev/null &
+            # command python3 ${AUDIO_AGENT} &> /dev/null &
+            : # no-op
           fi
         fi
       fi
