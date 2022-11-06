@@ -6,13 +6,13 @@
 readonly TRUE=1 FALSE=0
 
 # Numerical Constants
-readonly NSET=0 IDLE=1 ACTIVE=0
+readonly NULL=0 IDLE=1 ACTIVE=0
 
 # Time Constants
 readonly WAIT_PERIOD=5 DELAY_PERIOD=1 REFRESH_INTERVAL=0.10
 
 # Program File Paths
-readonly AUDIO_AGENT=./audio.py SERVICE_AGENT=./a2dp.py AUDIO_LOCK=./.lock
+readonly AUDIO_LOCK=./.lock AUDIO_AGENT=./audio.py SERVICE_AGENT=./a2dp.py 
 
 # Audio Asset Paths
 readonly DEVICE_CONNECTED=./assets/device-connected.wav DEVICE_DISCONNECTED=./assets/device-disconnected.wav
@@ -20,7 +20,7 @@ readonly DEVICE_CONNECTED=./assets/device-connected.wav DEVICE_DISCONNECTED=./as
 # End Defined Constants--------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Initialize Program Flags
-declare bluetooth_paired=${FALSE} audio_playback=${FALSE} audio_loopback=${NSET} led_active=${TRUE} exit_main=${FALSE}
+declare bluetooth_paired=${FALSE} audio_playback=${FALSE} audio_loopback=${NULL} led_active=${TRUE} exit_main=${FALSE}
 
 # End Global Variables---------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -62,7 +62,7 @@ function manage_service() {
   # Monitor Bluetooth Service
   while [[ 1 ]]; do
     # Check Exit Flag Before Doing Anything
-    if [[ ${exit_main} == ${TRUE} ]]
+    if [[ ${exit_main} -eq ${TRUE} ]]
     then
         # Enable Terminal Output
         show_output
@@ -75,7 +75,7 @@ function manage_service() {
     command sudo systemctl --quiet is-active bluetooth
 
     # Check If Bluetooth Service Is Active
-    if [[ ${?} != ${ACTIVE} ]]
+    if [[ ${?} -ne ${ACTIVE} ]]
     then
       # Log Program Event
       log_event "Restarting Services"
@@ -99,7 +99,7 @@ function manage_connections() {
   # Monitor Bluetooth Connections
   while [[ 1 ]]; do
     # Check Exit Flag Before Doing Anything
-    if [[ ${exit_main} == ${TRUE} ]]
+    if [[ ${exit_main} -eq ${TRUE} ]]
     then
       # Log Program Event
       log_event "Exiting Program"
@@ -108,10 +108,10 @@ function manage_connections() {
       command rm ${AUDIO_LOCK} &> /dev/null
 
       # Unload Loopback Module
-      command pactl unload-module ${audio_loopback} &> /dev/null
+      command pactl unload-module "${audio_loopback}" &> /dev/null
 
       # Reset Program Flags
-      bluetooth_paired=${FALSE}; audio_playback=${FALSE}; audio_loopback=${NSET}; led_active=${TRUE}
+      bluetooth_paired=${FALSE}; audio_playback=${FALSE}; audio_loopback=${NULL}; led_active=${TRUE}
 
       # Enable Terminal Output
       show_output
@@ -124,7 +124,7 @@ function manage_connections() {
     local num_connections=$(command hcitool con | command wc -l)
 
     # Determine Action
-    if [[ ${num_connections} != ${IDLE} && ${bluetooth_paired} == ${FALSE} ]]
+    if [[ ${num_connections} -ne ${IDLE} ]] && [[ ${bluetooth_paired} -eq ${FALSE} ]]
     then
       # Get Playback And Capture Devices
       local play=$(command pactl list sources short)
@@ -135,7 +135,7 @@ function manage_connections() {
       local capt_dev=$(command echo -e "${capt}" | command grep "aloop" | command awk '{print $1}')
 
       # Accept Bluetooth Connection
-      if [[ ${bluetooth_paired} == ${FALSE} && -n ${play_dev} && -n ${capt_dev} ]]
+      if [[ ${bluetooth_paired} -eq ${FALSE} ]] && [[ -n ${play_dev} ]] && [[ -n ${capt_dev} ]]
       then
         # Log Program Event
         log_event "Accepting Connection"
@@ -144,7 +144,10 @@ function manage_connections() {
         command aplay ${DEVICE_CONNECTED} &> /dev/null
 
         # Set Program Flags
-        bluetooth_paired=${TRUE}; audio_playback=${TRUE}; audio_loopback=$(command pactl load-module module-loopback source=${play_dev} sink=${capt_dev})
+        bluetooth_paired=${TRUE}; audio_playback=${TRUE}
+        
+        # Create Audio Loop Back Path
+        audio_loopback=$(command pactl load-module module-loopback source=${play_dev} sink=${capt_dev})
 
         # Initialize Start And Current Times
         local stime=$(command date -u +%s)
@@ -170,17 +173,17 @@ function manage_connections() {
         done
 
         # Check Program Flag
-        if [[ ${led_active} == ${TRUE} ]]
+        if [[ ${led_active} -eq ${TRUE} ]]
         then
           # Start Audio Agent In Background
           command python3 ${AUDIO_AGENT} &> /dev/null &
         fi
 
       # Manage Bluetooth Connection
-      elif [[ ${bluetooth_paired} == ${TRUE} ]]
+      elif [[ ${bluetooth_paired} -eq ${TRUE} ]]
       then
         # Unmap Audio Connection
-        if [[ ${audio_playback} == ${TRUE} && -z ${play_dev} ]]
+        if [[ ${audio_playback} -eq ${TRUE} ]] && [[ -z ${play_dev} ]]
         then
           # Log Program Event
           log_event "Halting Audio Playback"
@@ -189,22 +192,25 @@ function manage_connections() {
           command rm ${AUDIO_LOCK} &> /dev/null
 
           # Unload Loopback Module
-          command pactl unload-module ${audio_loopback} &> /dev/null
+          command pactl unload-module "${audio_loopback}" &> /dev/null
 
           # Reset Program Flags
-          audio_playback=${FALSE}; audio_loopback=${NSET}
+          audio_playback=${FALSE}; audio_loopback=${NULL}
 
         # Remap Audio Connection
-        elif [[ ${audio_playback} == ${FALSE}  && -n ${play_dev} ]]
+        elif [[ ${audio_playback} -eq ${FALSE} ]] && [[ -n ${play_dev} ]]
         then
           # Log Program Event
           log_event "Resuming Audio Playback"
 
           # Set Program Flags
-          audio_playback=${TRUE}; audio_loopback=$(command pactl load-module module-loopback source=${play_dev} sink=${capt_dev})
+          audio_playback=${TRUE}
+          
+          # Create Audio Loop Back Path
+          audio_loopback=$(command pactl load-module module-loopback source=${play_dev} sink=${capt_dev})
 
           # Check Program Flag
-          if [[ ${led_active} == ${TRUE} ]]
+          if [[ ${led_active} -eq ${TRUE} ]]
           then
             # Start Audio Agent In Background
             command python3 ${AUDIO_AGENT} &> /dev/null &
@@ -213,7 +219,7 @@ function manage_connections() {
       fi
 
     # Kill Bluetooth Connection
-    elif [[ ${num_connections} == ${IDLE} && ${bluetooth_paired} == ${TRUE} ]]
+    elif [[ ${num_connections} -eq ${IDLE} ]] && [[ ${bluetooth_paired} -eq ${TRUE} ]]
     then
       # Log Program Event
       log_event "Dropping Connection"
@@ -225,10 +231,10 @@ function manage_connections() {
       command aplay ${DEVICE_DISCONNECTED} &> /dev/null
 
       # Unload Loopback Module
-      command pactl unload-module ${audio_loopback} &> /dev/null
+      command pactl unload-module "${audio_loopback}" &> /dev/null
 
       # Reset Program Flags
-      bluetooth_paired=${FALSE}; audio_playback=${FALSE}; audio_loopback=${NSET}; led_active=${TRUE}
+      bluetooth_paired=${FALSE}; audio_playback=${FALSE}; audio_loopback=${NULL}; led_active=${TRUE}
     fi
 
     # Sleep For A Bit
